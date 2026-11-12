@@ -1,0 +1,15 @@
+# Dependências
+node_modules/
+venv/
+__pycache__/
+
+# Build do front
+dist/
+build/
+
+# Variáveis de ambiente (NUNCA suba isso!)
+.env
+*.env
+
+# Arquivos do sistema
+.DS_Store

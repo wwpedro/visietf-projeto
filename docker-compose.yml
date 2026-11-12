@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  # Container do Back-end
+  backend:
+    build: ./backend
+    container_name: visietf_backend
+    restart: always
+    environment:
+      # Passe as variáveis do seu banco aqui. 
+      # Como o banco está fora (Prisma, Neon, etc.), coloque a URL de conexão.
+      - DB_HOST=seu_host_aqui
+      - DB_PORT=5432
+      - DB_NAME=seu_banco
+      - DB_USER=seu_usuario
+      - DB_PASS=sua_senha
+      # Ou, se o seu database.py usa uma única string:
+      # - DATABASE_URL=postgresql://usuario:senha@host:5432/banco
+    ports:
+      - "8000:8000" # Expõe o back para você testar direto (http://localhost:8000)
+    networks:
+      - visietf_network
+
+  # Container do Front-end
+  frontend:
+    build: ./frontend
+    container_name: visietf_frontend
+    restart: always
+    ports:
+      - "80:80" # O front vai rodar na porta 80 (http://localhost)
+    depends_on:
+      - backend # Só sobe o front depois que o back estiver pronto
+    networks:
+      - visietf_network
+
+networks:
+  visietf_network:
+    driver: bridge
