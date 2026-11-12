@@ -220,7 +220,7 @@ export function Sidebar({ filters, onSelectViz, capacidades, ehTelaPequena, aoFe
   return (
     <div className="tri-front">
       <div className="logo-area">
-        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', width: '100%', alignItems: 'center', position: 'relative' }}>
           <div className="logo-img">
             <svg width="95" height="34" viewBox="0 0 95 34" xmlns="http://www.w3.org/2000/svg">
               <rect x="4"  y="12" width="10" height="10" rx="1.5" fill="#B9B9B9" transform="rotate(45 9 17)"/>
