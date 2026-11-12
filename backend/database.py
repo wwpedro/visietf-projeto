@@ -5,7 +5,19 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Pega a string única do .env
 DB_URL = os.getenv("DATABASE_URL")
+
+# BLINDAGEM: Limpa espaços e remove aspas acidentais
+if DB_URL:
+    DB_URL = DB_URL.strip().strip('"').strip("'")
+
+    # CORREÇÃO CRÍTICA: SQLAlchemy 1.4+ exige 'postgresql://' em vez de 'postgres://'
+    if DB_URL.startswith("postgres://"):
+        DB_URL = DB_URL.replace("postgres://", "postgresql://", 1)
+
+if not DB_URL:
+    raise ValueError("ERRO FATAL: A variável DATABASE_URL não foi configurada.")
 
 engine = create_engine(DB_URL)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
