@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { Clock, Filter, X } from 'lucide-react'
 import { FilterBlock } from '../Sidebar/Sidebar'
 import { contarAtributos, tiposCompativeis, eixoDeTempoDa } from '../../consulta'
+import { useLanguage } from '../../LanguageContext'
+import { rotuloFonte, rotuloDimensao, rotuloTipo } from '../../rotulos'
 
 const TODOS_OS_TIPOS_DE_GRAFICO = ['Barras', 'Linhas', 'Pizza', 'Mapa', 'Heatmap', 'Tabela']
 
@@ -10,6 +12,7 @@ export function BarraDeConfiguracao({ configuracao, capacidades, filtrosGlobais,
   const [popoverFiltros, setPopoverFiltros] = useState(false)
   const referenciaRelogio = useRef(null)
   const referenciaFiltros = useRef(null)
+  const { t } = useLanguage()
 
   useEffect(() => {
     if (!popoverRelogio && !popoverFiltros) return
@@ -140,18 +143,18 @@ export function BarraDeConfiguracao({ configuracao, capacidades, filtrosGlobais,
     <div className="viz-card-config" onMouseDown={e => e.stopPropagation()}>
       <select
         className="viz-card-config-select"
-        title="Fonte de dados"
+        title={t('cfgFonte')}
         value={configuracao.fonte}
         onChange={e => alterarFonte(e.target.value)}
       >
         {Object.entries(capacidades).map(([id, def]) => (
-          <option key={id} value={id}>{def.rotulo}</option>
+          <option key={id} value={id}>{rotuloFonte(t, id, def.rotulo)}</option>
         ))}
       </select>
 
       <select
         className="viz-card-config-select"
-        title="Agrupar por"
+        title={t('cfgAgruparPor')}
         value={configuracao.agruparPor[0] || ''}
         onChange={e => alterarDimensao(0, e.target.value)}
       >
@@ -164,7 +167,7 @@ export function BarraDeConfiguracao({ configuracao, capacidades, filtrosGlobais,
         <span className="viz-card-config-segunda">
           <select
             className="viz-card-config-select"
-            title="Segunda dimensão"
+            title={t('cfgSegundaDim')}
             value={configuracao.agruparPor[1] || ''}
             onChange={e => alterarDimensao(1, e.target.value)}
           >
@@ -174,7 +177,7 @@ export function BarraDeConfiguracao({ configuracao, capacidades, filtrosGlobais,
           </select>
           <span
             className="viz-card-config-remover"
-            title="Remover segunda dimensão"
+            title={t('cfgRemoverSegunda')}
             onClick={() => removerDimensao(1)}
           >
             <X size={12} />
@@ -187,7 +190,7 @@ export function BarraDeConfiguracao({ configuracao, capacidades, filtrosGlobais,
             value=""
             onChange={e => { if (e.target.value) alterarDimensao(1, e.target.value) }}
           >
-            <option value="">+ Dividir por…</option>
+            <option value="">{t('cfgDividirPor')}</option>
             {opcoesSegundaDimensao.map(d => (
               <option key={d.id} value={d.id}>{d.rotulo}</option>
             ))}
@@ -198,7 +201,7 @@ export function BarraDeConfiguracao({ configuracao, capacidades, filtrosGlobais,
       <div className="viz-card-config-ancora" ref={referenciaRelogio}>
         <span
           className="viz-card-config-icon"
-          title="Configurar tempo"
+          title={t('cfgTempo')}
           onClick={() => !eixoEhEdicao && setPopoverRelogio(v => !v)}
           style={{ color: eixoEhEdicao || modoTempo === 'agrupar' ? 'var(--gold-dark)' : 'var(--text-muted)' }}
         >
@@ -210,27 +213,27 @@ export function BarraDeConfiguracao({ configuracao, capacidades, filtrosGlobais,
               className={`viz-card-config-option ${modoTempo === 'agrupar' ? 'active' : ''}`}
               onClick={() => alterarModoTempo('agrupar')}
             >
-              Por ano (eixo X)
+              {t('cfgPorAno')}
             </div>
             <div
               className={`viz-card-config-option ${modoTempo === 'filtrar' ? 'active' : ''}`}
               onClick={() => alterarModoTempo('filtrar')}
             >
-              Só filtrar período
+              {t('cfgSoFiltrar')}
             </div>
             {modoTempo === 'filtrar' && (
               <div className="viz-card-config-anos">
                 <input
                   type="number"
                   className="viz-card-config-input"
-                  placeholder="Ano mín."
+                  placeholder={t('cfgAnoMin')}
                   value={configuracao.tempo.anoMinimo ?? ''}
                   onChange={e => alterarAnoDoFiltro('anoMinimo', e.target.value)}
                 />
                 <input
                   type="number"
                   className="viz-card-config-input"
-                  placeholder="Ano máx."
+                  placeholder={t('cfgAnoMax')}
                   value={configuracao.tempo.anoMaximo ?? ''}
                   onChange={e => alterarAnoDoFiltro('anoMaximo', e.target.value)}
                 />
@@ -242,19 +245,19 @@ export function BarraDeConfiguracao({ configuracao, capacidades, filtrosGlobais,
 
       <select
         className="viz-card-config-select"
-        title="Tipo de gráfico"
+        title={t('cfgTipoGrafico')}
         value={configuracao.tipoGrafico}
         onChange={e => alterarTipoGrafico(e.target.value)}
       >
         {tiposPossiveis.map(tipo => (
-          <option key={tipo} value={tipo}>{tipo}</option>
+          <option key={tipo} value={tipo}>{rotuloTipo(t, tipo)}</option>
         ))}
       </select>
 
       <div className="viz-card-config-ancora" ref={referenciaFiltros}>
         <span
           className="viz-card-config-icon"
-          title={configuracao.herdarFiltrosGlobais ? 'Usar filtros globais' : 'Filtros próprios do cartão'}
+          title={configuracao.herdarFiltrosGlobais ? t('cfgUsarGlobais') : t('cfgFiltrosProprios')}
           onClick={() => setPopoverFiltros(v => !v)}
           style={{ color: configuracao.herdarFiltrosGlobais ? 'var(--text-muted)' : 'var(--gold-dark)' }}
         >

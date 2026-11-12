@@ -3,12 +3,12 @@ import { useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { X, Sparkles, LayoutTemplate } from 'lucide-react'
 import { criarConfiguracaoPadrao, tiposCompativeis, contarAtributos } from '../../consulta'
+import { useLanguage } from '../../LanguageContext'
+import { rotuloFonte, rotuloDimensao, rotuloTipo, tituloDaConfiguracao } from '../../rotulos'
 
-const ROTULOS_DE_DIMENSAO = {
-  rfcs: 'RFCs', autor: 'Autores', categoria: 'Categoria',
-  grupo: 'Grupos', pais: 'Países', meeting: 'Meetings',
-  drafts: 'Drafts',
-  combinacoes: 'Combinações',
+const CHAVE_DE_DIMENSAO = {
+  rfcs: 'rfcs', autor: 'autores', categoria: 'categoria',
+  grupo: 'grupo', pais: 'pais', meeting: 'meetings', drafts: 'drafts',
 }
 
 function gerarPrincipal(dimensao) {
@@ -145,7 +145,7 @@ function escolherTipoGrafico(configuracao, tipoPreferido) {
   return tipos[0]
 }
 
-function gerarSugestoesContextuais(configuracao, capacidades, cardsAbertos) {
+function gerarSugestoesContextuais(configuracao, capacidades, cardsAbertos, t) {
   if (!configuracao || !capacidades) return []
   const fonteAtual = capacidades[configuracao.fonte]
   if (!fonteAtual) return []
@@ -160,7 +160,7 @@ function gerarSugestoesContextuais(configuracao, capacidades, cardsAbertos) {
     nova.tipoGrafico = escolherTipoGrafico(nova, 'Barras')
     sugestoes.push({
       label: rotuloDaConfiguracao(nova, capacidades),
-      descricaoCurta: 'Sem eixo de tempo',
+      descricaoCurta: t('semEixoTempo'),
       configuracao: nova,
     })
   } else if (contarAtributos(configuracao) < 3) {
@@ -168,7 +168,7 @@ function gerarSugestoesContextuais(configuracao, capacidades, cardsAbertos) {
     nova.tipoGrafico = escolherTipoGrafico(nova, 'Linhas')
     sugestoes.push({
       label: rotuloDaConfiguracao(nova, capacidades),
-      descricaoCurta: 'Adiciona eixo Ano',
+      descricaoCurta: t('addEixoAno'),
       configuracao: nova,
     })
   }
@@ -181,7 +181,7 @@ function gerarSugestoesContextuais(configuracao, capacidades, cardsAbertos) {
       nova.tipoGrafico = escolherTipoGrafico(nova, 'Heatmap')
       sugestoes.push({
         label: rotuloDaConfiguracao(nova, capacidades),
-        descricaoCurta: `Divide por ${fonteAtual.dimensoes.find(d => d.id === dim)?.rotulo ?? dim}`,
+        descricaoCurta: `${t('dividePor')} ${rotuloDimensao(t, dim, fonteAtual.dimensoes.find(d => d.id === dim)?.rotulo)}`,
         configuracao: nova,
       })
     }
@@ -195,7 +195,7 @@ function gerarSugestoesContextuais(configuracao, capacidades, cardsAbertos) {
       nova.tipoGrafico = escolherTipoGrafico(nova, tipoOriginal)
       sugestoes.push({
         label: rotuloDaConfiguracao(nova, capacidades),
-        descricaoCurta: `Troca para ${fonteAtual.dimensoes.find(d => d.id === dim)?.rotulo ?? dim}`,
+        descricaoCurta: `${t('trocaPara')} ${rotuloDimensao(t, dim, fonteAtual.dimensoes.find(d => d.id === dim)?.rotulo)}`,
         configuracao: nova,
       })
     }
@@ -211,7 +211,7 @@ function gerarSugestoesContextuais(configuracao, capacidades, cardsAbertos) {
     nova.tipoGrafico = escolherTipoGrafico(nova, tipoOriginal)
     sugestoes.push({
       label: rotuloDaConfiguracao(nova, capacidades),
-      descricaoCurta: `Muda fonte para ${defFonte.rotulo}`,
+      descricaoCurta: `${t('mudaFonte')} ${rotuloFonte(t, idFonte, defFonte.rotulo)}`,
       configuracao: nova,
     })
   }
@@ -230,22 +230,23 @@ function gerarSugestoesContextuais(configuracao, capacidades, cardsAbertos) {
 
 // ─── Componente ───────────────────────────────────────────────────
 export function ModalCombinacao({ dimensao, configuracao, cardsAbertos, capacidades, onClose, onSelectViz }) {
+  const { t } = useLanguage()
   const modoContextual = !!configuracao
 
   const opcoes = useMemo(() => {
     if (modoContextual) {
-      return gerarSugestoesContextuais(configuracao, capacidades, cardsAbertos)
+      return gerarSugestoesContextuais(configuracao, capacidades, cardsAbertos, t)
     }
     const principal = gerarPrincipal(dimensao)
     const combinacoes = gerarCombinacoes(dimensao, capacidades)
     return principal ? [principal, ...combinacoes] : combinacoes
-  }, [dimensao, capacidades, configuracao, cardsAbertos, modoContextual])
+  }, [dimensao, capacidades, configuracao, cardsAbertos, modoContextual, t])
 
   const titulo = modoContextual
-    ? `Combinar com ${rotuloDaConfiguracao(configuracao, capacidades)}`
+    ? `${t('combinarTitulo')} ${tituloDaConfiguracao(t, configuracao, capacidades)}`
     : dimensao === 'combinacoes'
-      ? 'Explorar combinações'
-      : `Visualizar ${ROTULOS_DE_DIMENSAO[dimensao] || 'Dados'}`
+      ? t('explorarComb')
+      : `${t('visualizar')} ${CHAVE_DE_DIMENSAO[dimensao] ? t(CHAVE_DE_DIMENSAO[dimensao]) : ''}`
 
   function escolher(item) {
     onSelectViz([{ configuracao: item.configuracao }])
@@ -261,11 +262,11 @@ export function ModalCombinacao({ dimensao, configuracao, cardsAbertos, capacida
         onClick={() => escolher(opcao)}
       >
         <div className="modal-option-text">
-          <span className="modal-option-label">{opcao.label}</span>
+          <span className="modal-option-label">{tituloDaConfiguracao(t, opcao.configuracao, capacidades)}</span>
           <span className="modal-option-desc">
             {opcao.descricaoCurta
-              ? `${opcao.descricaoCurta} · Gráfico de ${opcao.configuracao.tipoGrafico}`
-              : `Gráfico de ${opcao.configuracao.tipoGrafico}`}
+              ? `${opcao.descricaoCurta} · ${t('graficoTipo')}: ${rotuloTipo(t, opcao.configuracao.tipoGrafico)}`
+              : `${t('graficoTipo')}: ${rotuloTipo(t, opcao.configuracao.tipoGrafico)}`}
           </span>
         </div>
         <LayoutTemplate size={18} color="var(--border)" />
@@ -284,10 +285,8 @@ export function ModalCombinacao({ dimensao, configuracao, cardsAbertos, capacida
             </div>
             <div className="modal-subtitle">
               {opcoes.length === 0
-                ? (dimensao === 'combinacoes'
-                    ? 'Nenhum cruzamento disponível no momento.'
-                    : 'Todas as combinações já estão abertas no canvas.')
-                : 'Clique em uma sugestão para abrir uma nova janela.'}
+                ? (dimensao === 'combinacoes' ? t('modalSubNenhum') : t('modalSubTodasAbertas'))
+                : t('modalSubClique')}
             </div>
           </div>
           <span style={{ cursor: 'pointer', display: 'flex', color: 'var(--text-muted)' }} onClick={onClose}>
@@ -299,23 +298,23 @@ export function ModalCombinacao({ dimensao, configuracao, cardsAbertos, capacida
           {modoContextual ? (
             opcoes.length === 0 ? (
               <div style={{ padding: '20px 4px', color: 'var(--text-muted)', textAlign: 'center', fontSize: 12 }}>
-                Todas as combinações dessa janela já foram criadas. Tente mudar a configuração atual.
+                {t('modalCtxVazio')}
               </div>
             ) : (
               opcoes.map(renderOpcao)
             )
           ) : dimensao === 'combinacoes' ? (
             <>
-              <div className="modal-divider-title">Cruzamentos sugeridos</div>
+              <div className="modal-divider-title">{t('modalCruzamentos')}</div>
               {opcoes.map(renderOpcao)}
             </>
           ) : (
             <>
-              <div className="modal-divider-title">Visualização Principal</div>
+              <div className="modal-divider-title">{t('modalPrincipal')}</div>
               {opcoes[0] && renderOpcao(opcoes[0])}
               {opcoes.length > 1 && (
                 <>
-                  <div className="modal-divider-title" style={{ marginTop: 12 }}>Combinar com (Dados Interligados)</div>
+                  <div className="modal-divider-title" style={{ marginTop: 12 }}>{t('modalCombinarCom')}</div>
                   {opcoes.slice(1).map(renderOpcao)}
                 </>
               )}
@@ -324,7 +323,7 @@ export function ModalCombinacao({ dimensao, configuracao, cardsAbertos, capacida
         </div>
 
         <div className="modal-footer">
-          <button className="btn-modal-secondary" onClick={onClose}>Cancelar</button>
+          <button className="btn-modal-secondary" onClick={onClose}>{t('cancelar')}</button>
         </div>
       </div>
     </div>,

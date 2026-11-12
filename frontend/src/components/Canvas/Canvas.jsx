@@ -10,8 +10,9 @@ import { ComposableMap, Geographies, Geography } from 'react-simple-maps'
 import { ModalCombinacao } from '../Sidebar/ModalCombinacao'
 import { BarraDeConfiguracao } from './BarraDeConfiguracao'
 import { executarConsulta, converterRespostaParaDados } from '../../consulta'
+import { rotuloDimensao, tituloDaConfiguracao } from '../../rotulos'
 
-const COLORS = ['#FBC663', '#C49830', '#E8A020', '#F0D080', '#B8860B', '#3498DB', '#9B59B6', '#1ABC9C']
+const COLORS = ['#B8860B', '#6F4E05', '#D4A017', '#8A6508', '#E0A800', '#3498DB', '#9B59B6', '#1ABC9C']
 
 const ISO2_TO_NAME = {
   "US": "United States of America", "BR": "Brazil", "GB": "United Kingdom",
@@ -81,6 +82,7 @@ function normalizeData(raw, chartStyle) {
 
 // ─── Novo Componente Responsivo para o Mapa ───
 function ResponsiveMap({ data }) {
+  const { t } = useLanguage()
   const [size, setSize] = useState({ width: 0, height: 0 })
   const containerRef = useRef(null)
 
@@ -95,7 +97,7 @@ function ResponsiveMap({ data }) {
     return () => observer.disconnect()
   }, [])
 
-  const ESCALA_DE_COR = ['#FDE68A', '#FACC15', '#EAB308', '#CA8A04', '#A16207']
+  const ESCALA_DE_COR = ['#F1D27A', '#DDA90F', '#B8860B', '#8A6508', '#5C4305']
   const valoresPositivos = data.map(d => d.y).filter(v => v > 0)
   const valMax = Math.max(...valoresPositivos, 1)
   const valMin = valoresPositivos.length ? Math.min(...valoresPositivos) : 0
@@ -155,7 +157,7 @@ function ResponsiveMap({ data }) {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         gap: 4, padding: '4px 8px', fontSize: 10, color: '#555', flexShrink: 0,
       }}>
-        <span style={{ marginRight: 4, color: '#999' }}>Sem dados</span>
+        <span style={{ marginRight: 4, color: '#999' }}>{t('semDadosCurto')}</span>
         <span style={{ width: 16, height: 10, background: '#EAEAEA', border: '1px solid #D9D9D9' }} />
         <span style={{ margin: '0 4px', color: '#999' }}>{valMin}</span>
         {ESCALA_DE_COR.map(c => (
@@ -214,9 +216,8 @@ function VizCard({ card, index, filters, isSelected, onSelect, onDelete, onUpdat
   const [colunasDaTabela, setColunasDaTabela] = useState([])
 
   const tituloDoCartao = card.configuracao
-    ? gerarTitulo(card.configuracao, capacidades)
-    : (metric?.label ?? 'Visualização')
-
+    ? tituloDaConfiguracao(t, card.configuracao, capacidades)
+    : (metric?.label ?? t('visualizacao'))
   useEffect(() => {
     if (!metric && !card.configuracao) {
       setLoading(false)
@@ -307,7 +308,7 @@ function VizCard({ card, index, filters, isSelected, onSelect, onDelete, onUpdat
       link.href = canvas.toDataURL('image/png')
       link.click()
     } catch (err) {
-      alert('Não foi possível gerar a imagem.')
+      alert(t('erroImagem'))
     } finally {
       setBaixando(false)
     }
@@ -317,7 +318,7 @@ function VizCard({ card, index, filters, isSelected, onSelect, onDelete, onUpdat
     if (!data || (Array.isArray(data) && data.length === 0)) return
 
     if (chartStyle === 'Rede') {
-      alert('Export CSV não está disponível para Rede.')
+      alert(t('csvRede'))
       return
     }
 
@@ -396,7 +397,7 @@ function VizCard({ card, index, filters, isSelected, onSelect, onDelete, onUpdat
 
   function renderChart() {
     if (loading) return <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height: chartH, color:'var(--text-muted)', fontSize:13 }}>{t('carregando')}</div>
-    if (erro) return <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height: chartH, color:'#c0392b', fontSize:12, textAlign:'center', padding: 12 }}>Erro: {erro}<br/>(backend rodando?)</div>
+    if (erro) return <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height: chartH, color:'#c0392b', fontSize:12, textAlign:'center', padding: 12 }}>{t('erro')}: {erro}<br/>(backend rodando?)</div>
     if (!data || (Array.isArray(data) && data.length === 0)) return <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height: chartH, color:'var(--text-muted)', fontSize:13 }}>{t('semDados')}</div>
 
     switch (chartStyle) {
@@ -417,7 +418,7 @@ function VizCard({ card, index, filters, isSelected, onSelect, onDelete, onUpdat
                   <Legend wrapperStyle={{ fontSize: 10 }} />
                 </>
               ) : (
-                <Bar dataKey="y" fill="#FBC663" radius={[3, 3, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="y" fill="#B8860B" radius={[3, 3, 0, 0]} isAnimationActive={false} />
               )}
             </BarChart>
           </ResponsiveContainer>
@@ -440,7 +441,7 @@ function VizCard({ card, index, filters, isSelected, onSelect, onDelete, onUpdat
                     <Legend wrapperStyle={{ fontSize: 10 }} />
                   </>
                 ) : (
-                  <Line type="monotone" dataKey="y" stroke="#C49830" strokeWidth={2} dot={false} isAnimationActive={false} />
+                  <Line type="monotone" dataKey="y" stroke="#8A6508" strokeWidth={2} dot={false} isAnimationActive={false} />
                 )}
               </LineChart>
             </ResponsiveContainer>
@@ -476,7 +477,7 @@ function VizCard({ card, index, filters, isSelected, onSelect, onDelete, onUpdat
             <table style={{ borderCollapse: 'collapse', fontSize: 10, width: '100%' }}>
               <thead>
                 <tr>
-                  <th style={{ position: 'sticky', top: 0, left: 0, zIndex: 2, background: '#FAFAFA', padding: '4px 8px', textAlign: 'left', color: '#666', borderBottom: '1px solid var(--border)', borderRight: '1px solid var(--border)' }}>Categoria / Ano</th>
+                  <th style={{ position: 'sticky', top: 0, left: 0, zIndex: 2, background: '#FAFAFA', padding: '4px 8px', textAlign: 'left', color: '#666', borderBottom: '1px solid var(--border)', borderRight: '1px solid var(--border)' }}>{t('dim_categoria')} / {t('dim_ano')}</th>
                   {years.map(y => (
                     <th key={y} style={{ position: 'sticky', top: 0, background: '#FAFAFA', padding: '4px 6px', color: '#666', borderBottom: '1px solid var(--border)', minWidth: 30 }}>{y}</th>
                   ))}
@@ -489,7 +490,7 @@ function VizCard({ card, index, filters, isSelected, onSelect, onDelete, onUpdat
                     {years.map(y => {
                       const v = cellValue(c, y)
                       const op = Math.min(1, Math.max(0.08, v / maxVal))
-                      return <td key={y} title={`${c} · ${y}: ${v}`} style={{ backgroundColor: `rgba(251, 198, 99, ${op})`, color: op > 0.6 ? '#000' : '#333', padding: '6px 4px', textAlign: 'center', fontWeight: 600, borderBottom: '1px solid #F0F0F0', minWidth: 30 }}>{v || ''}</td>
+                      return <td key={y} title={`${c} · ${y}: ${v}`} style={{ backgroundColor: `rgba(184, 134, 11, ${op})`, color: op > 0.6 ? '#fff' : '#333', padding: '6px 4px', textAlign: 'center', fontWeight: 600, borderBottom: '1px solid #F0F0F0', minWidth: 30 }}>{v || ''}</td>
                     })}
                   </tr>
                 ))}
@@ -507,7 +508,7 @@ function VizCard({ card, index, filters, isSelected, onSelect, onDelete, onUpdat
                 <tr>
                   {colunas.map(col => (
                     <th key={col} style={{ position: 'sticky', top: 0, background: '#FAFAFA', padding: '4px 8px', textAlign: 'left', color: '#666', borderBottom: '1px solid var(--border)', borderRight: '1px solid var(--border)' }}>
-                      {ROTULOS_DE_DIMENSAO_FALLBACK[col] ?? col}
+                      {rotuloDimensao(t, col, ROTULOS_DE_DIMENSAO_FALLBACK[col] ?? col)}
                     </th>
                   ))}
                 </tr>
@@ -549,7 +550,7 @@ function VizCard({ card, index, filters, isSelected, onSelect, onDelete, onUpdat
         return (
           <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height: chartH, color:'var(--text-muted)', flexDirection:'column', gap:8 }}>
             <Construction size={32} />
-            <span>{chartStyle || 'Visualização'} — em desenvolvimento</span>
+            <span>{chartStyle ? t('tipo_' + chartStyle) : t('visualizacao')} — {t('emDesenvolvimento')}</span>
           </div>
         )
     }
@@ -568,7 +569,7 @@ function VizCard({ card, index, filters, isSelected, onSelect, onDelete, onUpdat
           <BarChart2 size={14} /> {tituloDoCartao}
           {card.configuracao && card.configuracao.herdarFiltrosGlobais === false && (
             <span
-              title="Este cartão usa filtros próprios (não herda do global)"
+              title={t('filtrosProprioDica')}
               style={{
                 fontSize: 9,
                 padding: '1px 5px',
@@ -583,7 +584,7 @@ function VizCard({ card, index, filters, isSelected, onSelect, onDelete, onUpdat
                 marginLeft: 4
               }}
             >
-              filtros próprios
+              {t('filtrosProprios')}
             </span>
           )}
         </span>
@@ -601,7 +602,7 @@ function VizCard({ card, index, filters, isSelected, onSelect, onDelete, onUpdat
           <span
             className="viz-card-combine"
             style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', color: 'var(--gold-dark)' }}
-            title="Combinar com outros dados"
+            title={t('combinarDados')}
             onMouseDown={e => e.stopPropagation()}
             onClick={() => setModalAberto(true)}
           >
@@ -611,14 +612,14 @@ function VizCard({ card, index, filters, isSelected, onSelect, onDelete, onUpdat
           <span
             className="viz-card-csv"
             style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', color: 'var(--text-primary)', fontSize: 11, fontWeight: 700 }}
-            title="Exportar CSV"
+            title={t('exportarCsv')}
             onMouseDown={e => e.stopPropagation()}
             onClick={baixarCSV}
           >
             CSV
           </span>
 
-          <span className="viz-card-download" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', opacity: baixando ? 0.5 : 1, color: 'var(--text-primary)' }} title="Baixar imagem" onMouseDown={e => e.stopPropagation()} onClick={baixando ? undefined : baixarImagem}>
+          <span className="viz-card-download" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', opacity: baixando ? 0.5 : 1, color: 'var(--text-primary)' }} title={t('baixarImagem')} onMouseDown={e => e.stopPropagation()} onClick={baixando ? undefined : baixarImagem}>
             {baixando ? <Loader2 size={16} className="spin" /> : <Download size={16} />}
           </span>
           <span className="viz-card-close" style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onMouseDown={e => e.stopPropagation()} onClick={() => onDelete(card.id)}><X size={16} /></span>

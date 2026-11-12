@@ -4,6 +4,7 @@ import { metricasParaChart } from '../../metrics'
 import { useLanguage } from '../../LanguageContext'
 import { useZoomLevel } from '../../hooks/useZoomLevel'
 import { criarConfiguracaoPadrao, configuracaoEquivalenteParaMetrica } from '../../consulta'
+import { rotuloTipo } from '../../rotulos'
 
 const VIZ_TYPES = [
   { id: 'Barras',  icon: BarChart3 },
@@ -168,7 +169,7 @@ export function Topbar({ filters, onSelectViz, dimensoesEmUso, onRemoveFilter, e
             onClick={aoAlternarMenu}
             aria-expanded={menuAberto}
             aria-controls="sidebar-menu"
-            aria-label="Abrir menu de filtros"
+            aria-label={t('abrirMenu')}
           >
             <Menu size={24} />
           </button>
@@ -217,14 +218,14 @@ export function Topbar({ filters, onSelectViz, dimensoesEmUso, onRemoveFilter, e
                   setPendingTipo(null)
                 }}
               >
-                <Sparkles size={16} color="var(--gold-dark)" /> Montar visualização
+                <Sparkles size={16} color="var(--gold-dark)" /> {t('montarViz')}
               </div>
 
               {VIZ_TYPES.map(vt => {
                 const Icon = vt.icon
                 return (
                   <div key={vt.id} className="lang-option" style={{ display: 'flex', alignItems: 'center', gap: 8 }} onClick={() => { setPendingTipo(vt.id); setTipoOpen(false); setDadoOpen(true) }}>
-                    <Icon size={16} color="var(--text-secondary)" /> {vt.id}
+                    <Icon size={16} color="var(--text-secondary)" /> {rotuloTipo(t, vt.id)}
                   </div>
                 )
               })}
@@ -234,7 +235,7 @@ export function Topbar({ filters, onSelectViz, dimensoesEmUso, onRemoveFilter, e
           {dadoOpen && pendingTipo && (
             <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, background: '#fff', border: '1px solid #D9D9D9', borderRadius: 8, minWidth: 260, maxHeight: 340, overflowY: 'auto', zIndex: 300, boxShadow: '0 4px 16px rgba(0,0,0,.1)' }}>
               <div style={{ padding: '6px 14px', fontSize: 11, fontWeight: 700, color: '#999', display: 'flex', alignItems: 'center', gap: 6 }}>
-                {(() => { const Icon = VIZ_TYPES.find(v => v.id === pendingTipo)?.icon; return Icon ? <Icon size={14} /> : null })()} {pendingTipo}
+                {(() => { const Icon = VIZ_TYPES.find(v => v.id === pendingTipo)?.icon; return Icon ? <Icon size={14} /> : null })()} {rotuloTipo(t, pendingTipo)}
               </div>
               {Object.entries(agruparPorGrupo(metricasParaChart(pendingTipo))).map(([grupo, metricas]) => (
                 <div key={grupo}>
