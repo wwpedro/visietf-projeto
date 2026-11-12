@@ -37,10 +37,8 @@ COPY --from=frontend-build /app/frontend/dist /usr/share/nginx/html
 # Copia a configuração do Nginx
 COPY nginx.conf /etc/nginx/sites-available/default
 
-# Cria um script para rodar o Python em background e o Nginx na frente
-RUN printf '#!/bin/sh\nuvicorn main:app --host 127.0.0.1 --port 8000 &\nnginx -g "daemon off;"\n' > /app/start.sh && chmod +x /app/start.sh
-
 # Expõe apenas a porta 80 (do Nginx)
 EXPOSE 80
+RUN printf '#!/bin/sh\nuvicorn main:app --host 0.0.0.0 --port 8000 &\nnginx -g "daemon off;"\n' > /app/start.sh && chmod +x /app/start.sh
 
 CMD ["/app/start.sh"]
