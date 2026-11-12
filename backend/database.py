@@ -2,6 +2,7 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from dotenv import load_dotenv
+import re
 
 load_dotenv()
 
@@ -19,6 +20,7 @@ if DB_URL:
 if not DB_URL:
     raise ValueError("ERRO FATAL: A variável DATABASE_URL não foi configurada.")
 
+DB_URL = re.sub(r"^postgres(ql)?(\+\w+)?://", "postgresql+psycopg2://", DB_URL)
 engine = create_engine(DB_URL)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 Base = declarative_base()
