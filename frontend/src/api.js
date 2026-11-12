@@ -3,7 +3,9 @@
 const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
 async function apiGet(path, params = {}) {
-  const url = new URL(API_BASE + path)
+  // CORREÇÃO: Adicionado window.location.origin para resolver a URL relativa
+  const url = new URL(API_BASE + path, window.location.origin)
+  
   Object.entries(params).forEach(([k, v]) => {
     if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v)
   })
@@ -32,7 +34,7 @@ export const api = {
   draftsKeywords:(params) => apiGet('/drafts/keywords', params),
   draftsPorWg:      (params) => apiGet('/drafts/por-wg', params),
   versoesPorDraft:  (params) => apiGet('/drafts/versoes-por-draft', params),
-  draftsLista:      (params) => apiGet('/drafts/lista', params),   // ← Passo 6 (fix)
+  draftsLista:      (params) => apiGet('/drafts/lista', params),
 
   organizacoesRanking:       (params) => apiGet('/organizacoes/ranking', params),
   organizacoesRankingDrafts: (params) => apiGet('/organizacoes/ranking-drafts', params),
