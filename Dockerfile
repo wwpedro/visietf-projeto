@@ -37,8 +37,10 @@ COPY --from=frontend-build /app/frontend/dist /usr/share/nginx/html
 # Copia a configuração do Nginx
 COPY nginx.conf /etc/nginx/sites-available/default
 
+# Cria o script de inicialização com monitoramento de processos
+RUN printf '#!/bin/sh\nuvicorn main:app --host 0.0.0.0 --port 8000 &\nUVICORN_PID=$!\nnginx -g "daemon off;" &\nNGINX_PID=$!\nwait -n "$UVICORN_PID" "$NGINX_PID"\nEXIT_CODE=$?\nkill "$UVICORN_PID" "$NGINX_PID" 2>/dev/null || true\nexit "$EXIT_CODE"\n' > /app/start.sh && chmod +x /app/start.sh
+
 # Expõe apenas a porta 80 (do Nginx)
 EXPOSE 80
-RUN printf '#!/bin/sh\nuvicorn main:app --host 0.0.0.0 --port 8000 &\nnginx -g "daemon off;"\n' > /app/start.sh && chmod +x /app/start.sh
 
 CMD ["/app/start.sh"]
